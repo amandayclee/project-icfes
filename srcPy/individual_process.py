@@ -15,10 +15,10 @@ csv_folder_path = root + "Csv"
 os.makedirs(csv_folder_path, exist_ok=True)
 
 # Function to calculate and export correlation matrix
-def calculate_and_export_correlation(input_file, output_file, processed_csv_files):
+def calculate_and_export_correlation(input_file, output_file):
     df = pd.read_csv(input_file, sep=';', encoding='utf-8', low_memory=False)
-    selected_columns = df.filter(regex=r'^PUNT_', axis=1)
-
+    selected_columns = df.filter(regex=r'^(P|p)(U|u)(N|n)(T_|t_)', axis=1)
+    
     missing_values = selected_columns.isna()
     valid_rows = np.logical_not(missing_values.any(axis=1))  # Find rows without missing values
 
@@ -27,7 +27,6 @@ def calculate_and_export_correlation(input_file, output_file, processed_csv_file
         for row in invalid_rows:
             print(f"Missing value in row {row} in {input_file}")
         selected_columns = selected_columns[valid_rows]  # Filter out rows with missing values
-        processed_csv_files.append(selected_columns)
     else:
         print("There is no missing data in punt_")
 
@@ -41,8 +40,6 @@ def calculate_and_export_correlation(input_file, output_file, processed_csv_file
 
     correlation_pd.to_csv(output_file, sep=';', encoding='utf-8')
 
-# Create a list to store the paths of all processed CSV files
-processed_csv_files = []
 
 for zip_file in zip_files:
     zip_file_path = os.path.join(zip_folder_path, zip_file)
@@ -71,7 +68,7 @@ for filename in os.listdir(txt_folder_path):
         # Check if the correlation output file already exists
         if not os.path.exists(correlation_output_file):
             # Calculate and export correlation matrix
-            calculate_and_export_correlation(output_file, correlation_output_file, processed_csv_files)
+            calculate_and_export_correlation(output_file, correlation_output_file)
         else:
             print(filename + " correlation file exists.")
             
