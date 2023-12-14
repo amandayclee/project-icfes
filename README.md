@@ -3,8 +3,12 @@
 ![version](https://img.shields.io/badge/version-1.0-blue) ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg) ![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)
 
 # Project Intro/Objective :mag:
+The problem at hand revolves around the analysis of SAT scores in Colombia, particularly the Saber 11 exam administered by the Colombian Institute for the Evaluation of Education (ICFES). This standardized test plays a crucial role in the higher education admissions process in Colombia, with universities considering these scores along with other factors when admitting students.
 
-The purpose of this project is _______.
+The key objectives of this analysis can be outlined as follows:
+1. Performance Analysis: Evaluate student performance trends over time and across different regions in Colombia. Identify strengths and weaknesses in the education system to highlight areas in need of improvement.
+2. Socio Economic Impact: Explore the connections between socioeconomic factors in each department and SAT scores. Examine potential inequalities in education to inform initiatives for more equitable opportunities.
+3. Predictive Modeling: Develop predictive models to forecast SAT scores based on socioeconomic features. Identify students who may require additional support, contributing to early interventions and improved academic outcomes.
 
 # Remarks
 

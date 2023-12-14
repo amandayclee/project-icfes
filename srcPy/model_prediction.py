@@ -25,6 +25,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestRegressor
 from warnings import simplefilter
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.tree import plot_tree
 simplefilter("ignore", category=ConvergenceWarning)
 
 # Set env variables and folder paths
@@ -118,6 +119,8 @@ vars_LASSO = pd.DataFrame(data = lasso_best.coef_[lasso_best.coef_>0],
 print(vars_LASSO)
 
 selected_lasso_columns = X_train.columns[lasso_best.coef_ > 0].tolist()
+print('Attribute numbers before LASSO: ', len(X.columns))
+print('Attribute numbers after LASSO: ', len(selected_lasso_columns))
 
 print('R square of LASSO from training set:', round(lasso_best.score(X_train, Y_train)*100, 2))
 print('R square of LASSO from test set:', round(lasso_best.score(X_test, Y_test)*100, 2))
@@ -157,3 +160,12 @@ feature_importance_df = pd.DataFrame({'Feature': feature_names, 'Importance': fe
 feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
 top_5_features = feature_importance_df.head(5)
 print('Top 5 important features are:', top_5_features)
+
+plt.figure(figsize=(50, 30))
+plot_tree(best_rf.estimators_[0], feature_names=X_train.columns, filled=True, rounded=True)
+plt.savefig(os.path.join(csv2_folder_path, ("rf_training.pdf")), dpi=300, format='pdf')
+
+
+plt.figure(figsize=(50, 30))
+plot_tree(best_rf.estimators_[0], feature_names=X_test.columns, filled=True, rounded=True)
+plt.savefig(os.path.join(csv2_folder_path, ("rf_testing.pdf")), dpi=300, format='pdf')
