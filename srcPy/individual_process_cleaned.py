@@ -63,16 +63,25 @@ depto_mapping = {
 
 # Set env variables and folder paths
 root = os.environ['ROOT']
-zip_folder_path = root + 'OneDrive_1_11-2-2023'
-txt_folder_path = root + 'Txt_11-2-2023'
-csv_folder_path = root + 'Csv_11-2-2023'
-csv2_folder_path = root + 'Csv_12-13-2023'
-plot_folder_path = root + 'Plot_11-2-2023'
-shapefile_abs_path = root + 'OneDrive_1_10-10-2023/col_admbnda_adm1_mgn_20200416.shp'
+zip_folder_path = root + 'raw/zip'
+txt_folder_path = root + 'raw/txt'
+shapefile_abs_path = root + 'raw/shapefile/col_admbnda_adm1_mgn_20200416.shp'
+saber11_folder_path = root + 'processed/saber11'
+geoportal_basic_folder_path = root + 'process/geoportal_basic'
+geoportal_period_folder_path = root + 'process/geoportal_basic/period'
+shapefile_merge_folder_path = root + 'processed/shapefile_merge'
+geoportal_merge_folder_path = root + 'processed/geoportal_merge'
+heatmap_folder_path = root + 'plot/heatmap'
+choropleth_folder_path = root + 'plot/choropleth'
+scatter_folder_path = root + 'plot/scatter'
+anova_table_path = root+ 'table/anova'
+linear_reg_path = root+ 'table/linear_regression'
 zip_files = [file for file in os.listdir(zip_folder_path) if file.endswith(".zip")]
+os.makedirs(zip_folder_path, exist_ok=True)
 os.makedirs(txt_folder_path, exist_ok=True)
-os.makedirs(csv_folder_path, exist_ok=True)
-os.makedirs(plot_folder_path, exist_ok=True)
+os.makedirs(saber11_folder_path, exist_ok=True)
+os.makedirs(shapefile_merge_folder_path, exist_ok=True)
+os.makedirs(heatmap_folder_path, exist_ok=True)
 
 # Open zip file
 for zip_file in zip_files:
@@ -92,7 +101,7 @@ for txt_file in os.listdir(txt_folder_path):
     if txt_file.endswith(".TXT") or txt_file.endswith(".txt"):
         print(txt_file, ' File cleaning...')
         input_txt_file = os.path.join(txt_folder_path, txt_file)
-        output_csv_file = os.path.join(csv_folder_path, txt_file.replace('.txt', '_tr.csv').replace('.TXT', '_tr.csv'))
+        output_csv_file = os.path.join(saber11_folder_path, txt_file.replace('.txt', '_tr.csv').replace('.TXT', '_tr.csv'))
 
         # Check if the processed csv file exists
         if not os.path.exists(output_csv_file):
@@ -104,8 +113,8 @@ distance = dict()
 count = 0
 
 # Process csv file
-for csv_file in [x for x in os.listdir(csv_folder_path) if x.endswith('_tr.csv')]:
-    csv_file_path = os.path.join(csv_folder_path, csv_file)
+for csv_file in [x for x in os.listdir(saber11_folder_path) if x.endswith('_tr.csv')]:
+    csv_file_path = os.path.join(saber11_folder_path, csv_file)
     df = pd.read_csv(csv_file_path, sep=';', encoding='utf-8', low_memory=False)
     print(csv_file, df.shape)
 
@@ -115,14 +124,12 @@ for csv_file in [x for x in os.listdir(csv_folder_path) if x.endswith('_tr.csv')
     # exclude_column = ['PUNT_RAZONA_CUANTITATIVO', 'PUNT_COMP_CIUDADANA']
     # filtered_columns = filtered_columns.drop(exclude_column)
     filtered_missing_df = df.dropna(subset=filtered_columns)
+
     # Combine each period together
-    combined_data = pd.concat([combined_data, filtered_missing_df])
-    count += 1
-    print("I'm combining... ", csv_file, sep=',', encoding='utf-8', low_memory=False)
-    print("Counting...", count)
+    # combined_data = pd.concat([combined_data, filtered_missing_df])
 
     # Calculate correlation, Plot heatmap
-    heatmap_image_file = os.path.join(plot_folder_path, csv_file.replace(".csv", "_heatmap.pdf"))
+    heatmap_image_file = os.path.join(heatmap_folder_path, csv_file.replace(".csv", "_heatmap.pdf"))
     if not os.path.exists(heatmap_image_file):
         selected_columns = filtered_missing_df.filter(regex=r'^(P|p)(U|u)(N|n)(T_|t_)', axis=1)
         correlation_pd = selected_columns.corr()
@@ -134,7 +141,7 @@ for csv_file in [x for x in os.listdir(csv_folder_path) if x.endswith('_tr.csv')
         plt.savefig(heatmap_image_file, dpi=300, format='pdf')
         plt.clf()
 
-    merged_data_file = os.path.join(csv_folder_path, csv_file.replace(".csv", "_shape_merged.csv"))
+    merged_data_file = os.path.join(shapefile_merge_folder_path, csv_file.replace(".csv", "_shape_merged.csv"))
     if not os.path.exists(merged_data_file):
         # Merge csv file with shape file: Add 'State' Column and other shape attributes
         filtered_missing_df['ESTU_DEPTO_RESIDE'] = filtered_missing_df['ESTU_DEPTO_RESIDE'].str.title()
@@ -163,7 +170,7 @@ for csv_file in [x for x in os.listdir(csv_folder_path) if x.endswith('_tr.csv')
     
     merged_data_plot = pd.read_csv(merged_data_file, sep=',', encoding='utf-8', low_memory=False)
 
-    anova_table_file = os.path.join(csv_folder_path, csv_file.replace(".csv", "_anova_table.csv"))
+    anova_table_file = os.path.join(anova_table_path, csv_file.replace(".csv", "_anova_table.csv"))
     if not os.path.exists(anova_table_file):
         # ANOVA
         depto_grouped = filtered_missing_df[['PUNT_GLOBAL','ESTU_DEPTO_RESIDE']].copy()
@@ -178,7 +185,7 @@ for csv_file in [x for x in os.listdir(csv_folder_path) if x.endswith('_tr.csv')
     gdf = gpd.GeoDataFrame(merged_data_plot,geometry='GEOMETRY', crs='epsg:4326')
     merged_data_plot = gdf.to_crs('EPSG:6247')
 
-    merged_data_map = os.path.join(plot_folder_path, csv_file.replace(".csv", "_map.pdf"))
+    merged_data_map = os.path.join(choropleth_folder_path, csv_file.replace(".csv", "_map.pdf"))
     if not os.path.exists(merged_data_map):
         merged_data_plot.plot(column='MEAN', legend=True) #, legend_kwds={"label": "Mean Global Score", "orientation": "horizontal"})
         plt.title('Mean Global Score in Each State')
@@ -198,7 +205,7 @@ for csv_file in [x for x in os.listdir(csv_folder_path) if x.endswith('_tr.csv')
         plt.clf()
 
     # Plot state/global_score scatter
-    merged_data_scatter = os.path.join(plot_folder_path, csv_file.replace(".csv", "_scatter.pdf"))
+    merged_data_scatter = os.path.join(scatter_folder_path, csv_file.replace(".csv", "_scatter.pdf"))
     merged_data_plot = merged_data_plot[merged_data_plot['MEAN'] != 0]
     if not os.path.exists(merged_data_scatter):
         fig = px.scatter(merged_data_plot, 
@@ -216,7 +223,7 @@ for csv_file in [x for x in os.listdir(csv_folder_path) if x.endswith('_tr.csv')
         fig.show()
         fig.write_image(merged_data_scatter, engine="kaleido")
 
-    linear_regression_file = os.path.join(csv_folder_path, csv_file.replace(".csv", "_linear_reg.csv"))
+    linear_regression_file = os.path.join(linear_reg_path, csv_file.replace(".csv", "_linear_reg.csv"))
     if not os.path.exists(linear_regression_file):
         X = merged_data_plot[['DIST_TO_CAPITAL']].values.reshape(-1, 1)
         y = merged_data_plot['MEAN']
@@ -231,24 +238,27 @@ for csv_file in [x for x in os.listdir(csv_folder_path) if x.endswith('_tr.csv')
         results_df = pd.DataFrame(results)
         results_df.to_csv(linear_regression_file)
 
+
+# Combine Global_Punt with geoportal indicators
 all_sociaecon = pd.DataFrame()
-merged_basic_file = os.path.join(csv2_folder_path, "basic_all_time.csv")
-for csv_file in [x for x in os.listdir(csv_folder_path) if x.endswith('_shape_merged.csv')]:
-    basic_df = pd.read_csv((csv_folder_path + '/basic_file_output.csv'), sep=',', encoding='utf-8', low_memory=False, index_col=0)
-    csv_file_path = os.path.join(csv_folder_path, csv_file)
-    shape_df = pd.read_csv(csv_file_path, sep=',', encoding='utf-8', low_memory=False)
-    print(shape_df.columns)
-    print(basic_df.columns)
+merged_basic_file = os.path.join(geoportal_merge_folder_path, "geoportal_all_time.csv")
+if not os.path.exists(merged_basic_file):
+    for csv_file in [x for x in os.listdir(shapefile_merge_folder_path) if x.endswith('_shape_merged.csv')]:
+        basic_df = pd.read_csv((geoportal_basic_folder_path + '/geoportal_basic.csv'), sep=',', encoding='utf-8', low_memory=False, index_col=0)
+        csv_file_path = os.path.join(shapefile_merge_folder_path, csv_file)
+        shape_df = pd.read_csv(csv_file_path, sep=',', encoding='utf-8', low_memory=False)
+        print(shape_df.columns)
+        print(basic_df.columns)
 
-    basic_df = basic_df.merge(shape_df[['ADM1_ES', 'MEAN']], on='ADM1_ES', how='left')
-    print('This is: ', csv_file)
-    print(basic_df.shape)
+        basic_df = basic_df.merge(shape_df[['ADM1_ES', 'MEAN']], on='ADM1_ES', how='left')
+        print('This is: ', csv_file)
+        print(basic_df.shape)
 
-    basic_df.to_csv(os.path.join(csv2_folder_path, csv_file.replace("_shape_merged.csv", "_basic.csv")))
-    all_sociaecon = pd.concat([all_sociaecon, basic_df])
-    print('Concate: ', all_sociaecon.columns)
-    print(all_sociaecon.shape)
+        basic_df.to_csv(os.path.join(geoportal_period_folder_path, csv_file.replace("_shape_merged.csv", "_basic.csv")))
+        all_sociaecon = pd.concat([all_sociaecon, basic_df])
+        print('Concate: ', all_sociaecon.columns)
+        print(all_sociaecon.shape)
 
-all_sociaecon.reset_index(inplace=True, drop=True)
-all_sociaecon.to_csv(merged_basic_file)
-print('Done')  
+    all_sociaecon.reset_index(inplace=True, drop=True)
+    all_sociaecon.to_csv(merged_basic_file)
+    print('Done')  

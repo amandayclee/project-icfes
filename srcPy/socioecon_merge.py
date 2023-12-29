@@ -3,7 +3,7 @@ import glob
 import pandas as pd
 
 root = os.environ['ROOT']
-folder_path = root + 'OneDrive_1_11-26-2023'
+folder_path = root + 'raw/geoportal'
 
 def delete_files_with_part2(directory):
     for root, dirs, files in os.walk(directory):
@@ -17,7 +17,7 @@ def delete_files_with_part2(directory):
 
 # delete_files_with_part2(folder_path)
 
-basic_path = root + '/Csv_11-2-2023/basic_file_output.csv'
+basic_path = root + 'process/geoportal_basic/geoportal_basic.csv'
 merged_basic_df = pd.read_csv(basic_path, sep=',', encoding='utf-8', low_memory=False)
 alarm = len(merged_basic_df['cod_departamento'])
 # print("Just Check:\n", merged_basic_df.columns)

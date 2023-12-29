@@ -53,4 +53,8 @@ This repo has the following basic structure.
 
 ### Acknowledgment
 
+This project, developed by Yi Chien Lee in 2023, was conducted under the guidance of Dr. Cristian Román-Palacios and Ph.D. student Danielle Van Boxel within the Data Diversity Lab at the University of Arizona.
+
+Contact Info: yichienlee@arizona.edu
+
 Initial project structure was created following the structure in [this repo](https://github.com/malill/research-template).

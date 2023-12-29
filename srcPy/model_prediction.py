@@ -30,7 +30,9 @@ simplefilter("ignore", category=ConvergenceWarning)
 
 # Set env variables and folder paths
 root = os.environ['ROOT']
-csv2_folder_path = root + 'Csv_12-13-2023'
+geoportal_period_folder_path = root + 'processed/geoportal_basic/period'
+model_output_model_path = root + 'model_output'
+
 selected_cols_for_lasso = [
     'percentage_of_households_with_access_to_garbage_collecting_services_valor',
     'percentage_of_households_with_access_to_electric_energy_services_valor',
@@ -93,10 +95,9 @@ selected_cols_for_lasso = [
 ]
 
 
-basic_df = pd.read_csv(csv2_folder_path + '/basic_all_time.csv', index_col=0)
+basic_df = pd.read_csv(geoportal_period_folder_path + '/geoportal_all_time.csv', index_col=0)
 basic_df = basic_df[(basic_df['MEAN'] != 0) & basic_df['MEAN'].notna()]
 basic_df = basic_df[basic_df['ADM1_ES'] != 'Ninguno'].dropna()
-basic_df.to_csv(os.path.join(csv2_folder_path, ("errr_basic.csv")))
 
 X = basic_df[selected_cols_for_lasso]
 Y = basic_df['MEAN']
@@ -116,7 +117,7 @@ vars_LASSO = pd.DataFrame(data = lasso_best.coef_[lasso_best.coef_>0],
      index = X_train.columns[lasso_best.coef_>0],
      columns = ['Coefficients'])
 
-print(vars_LASSO)
+vars_LASSO.to_csv(os.path.join(model_output_model_path, 'LASSO_coefficients.csv'))
 
 selected_lasso_columns = X_train.columns[lasso_best.coef_ > 0].tolist()
 print('Attribute numbers before LASSO: ', len(X.columns))
@@ -163,9 +164,9 @@ print('Top 5 important features are:', top_5_features)
 
 plt.figure(figsize=(50, 30))
 plot_tree(best_rf.estimators_[0], feature_names=X_train.columns, filled=True, rounded=True)
-plt.savefig(os.path.join(csv2_folder_path, ("rf_training.pdf")), dpi=300, format='pdf')
+plt.savefig(os.path.join(model_output_model_path, ("rf_training.pdf")), dpi=300, format='pdf')
 
 
 plt.figure(figsize=(50, 30))
 plot_tree(best_rf.estimators_[0], feature_names=X_test.columns, filled=True, rounded=True)
-plt.savefig(os.path.join(csv2_folder_path, ("rf_testing.pdf")), dpi=300, format='pdf')
+plt.savefig(os.path.join(model_output_model_path, ("rf_testing.pdf")), dpi=300, format='pdf')
